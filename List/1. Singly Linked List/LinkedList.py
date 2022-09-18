@@ -189,20 +189,33 @@ class LinkedList(ListADT):
         return self._length
 
     def remove_all(self, element):
-        if self._head is None:
-            print('A lista está vazia!')
-        if self._head is not None and self._head._element == element:
-            self._head = self._head._next
-        if self._head is not None:
-            atual = self._head
-            while atual._next is not None:
-                if atual._next._element == element:
-                    atual._next = atual._next._next
-                else:
-                    atual = atual._next
+        if not self.empty():
+            aux = self._head
+            if aux._element == element:
+                self._head = aux._next
+                aux = self._head
+            while aux._next:
+                prev = aux
+                aux = aux._next
+                if aux._element == element:
+                    prev._next = aux._next
+
 
     def remove_at(self, index):
-        pass
+        anterior = None
+        atual = self._head
+        idx = 0
+        while atual:
+            if idx == index:
+                if anterior:
+                    anterior._next = atual._next
+                else:
+                    self._head = atual._next
+            anterior = atual
+            atual = atual._next
+            idx += 1
+        self._length -= 1
+
 
     def append(self, element):
         new_node = Node(element)
@@ -210,9 +223,21 @@ class LinkedList(ListADT):
         while aux._next != None:
             aux = aux._next
         aux._next = new_node
+        self._length += 1
 
     def replace(self, index, element):
-        pass
+        anterior = None
+        atual = self._head
+        idx = 0
+        while atual:
+            if idx == index:
+                if anterior:
+                    anterior._next._element = element
+                else:
+                    self._head._element = element
+            anterior = atual
+            atual = atual._next
+            idx += 1
 
     def empty(self):
         return not self._head
@@ -246,6 +271,9 @@ if __name__ == '__main__':
     ll.remove(1)
     print(ll)
     ll.remove(0)
-    ll.remove(2)
+    ll.append(2)
     ll.append(8)
+    ll.append(2)
+    print(ll)
+    ll.remove_all(2)
     print(ll)
