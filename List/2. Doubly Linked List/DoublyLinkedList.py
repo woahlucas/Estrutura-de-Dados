@@ -41,10 +41,10 @@ class Node:
         self._next = next
 
     def __str__(self):
-        if not self._next:
-            return '|' + self._data.__str__() + '|'
+        if self._prev._data == None:
+            return self._data.__str__()
         else:
-            return '|' + self._data.__str__()
+            return '-' + self._data.__str__()
 
 
 class DoublyLinkedList:
@@ -53,24 +53,88 @@ class DoublyLinkedList:
         self._trailer = Node()
         self._header._next = self._trailer
         self._trailer._prev = self._header
-        self._size = 0
+        self._length = 0
+
+    def insert(self, index, data):
+        idx = 0
+        curr = self._header
+        while curr is not self._trailer:
+            if idx == index:
+                newNode = Node(data, curr, curr._next)
+                curr._next._prev = newNode
+                curr._next = newNode
+            idx += 1
+            curr = curr._next
+        self._length += 1
+
+    def count(self, data):
+        if not self.empty():
+            counter = 0
+            curr = self._header._next
+            while curr is not self._trailer:
+                if curr._data == data:
+                    counter += 1
+                curr = curr._next
+        return counter
+
+    def clear(self):
+        self._header._next = None
+        self._trailer._prev = None
+        self._length = 0
+
+    def index(self, data):
+        result = None
+        idx = 0
+        curr = self._header._next
+        while not result and curr is not self._trailer:
+            if curr._data == data:
+                result = idx
+            curr = curr._next
+            idx += 1
+        return result
 
     def length(self):
-        print(self._size)
-        return self._size
+        print(self._length)
+        return self._length
 
     def empty(self):
-        return self._size == 0
+        return self._length == 0
 
     def append(self, data):
-        newNode = Node()
-        newNode._data = data
-        newNode._prev = self._trailer._prev
-        newNode._next = self._trailer
+        newNode = Node(data, self._trailer._prev, self._trailer)
         self._trailer._prev._next = newNode
         self._trailer._prev = newNode
-        self._size += 1
+        self._length += 1
         return newNode
+
+    def remove_all(self, data):
+        curr = self._header._next
+        while curr is not self._trailer:
+            if curr._data == data:
+                curr._prev._next = curr._next
+                curr._next._prev = curr._prev
+            curr = curr._next
+        self._length -= 1
+
+    def remove_at(self, index):
+        idx = 0
+        curr = self._header._next
+        while curr is not self._trailer:
+            if idx == index:
+                curr._prev._next = curr._next
+                curr._next._prev = curr._prev
+            idx += 1
+            curr = curr._next
+        self._length -= 1
+
+    def replace(self, index, data):
+        idx = 0
+        curr  = self._header._next
+        while curr is not self._trailer:
+            if idx == index:
+                curr._data = data
+            idx += 1
+            curr = curr._next
 
     def __str__(self):
         if not self.empty():
@@ -82,7 +146,7 @@ class DoublyLinkedList:
                 result += aux.__str__()
             return result
         else:
-            return '||'
+            return '- -'
 
 if __name__ == '__main__':
     dll = DoublyLinkedList()
