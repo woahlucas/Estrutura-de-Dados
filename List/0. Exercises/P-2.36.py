@@ -5,81 +5,127 @@
 # collide in the same cell, then they stay where they are, but they create a new instance of that type of animal,
 # which is placed in a random empty (i.e., previously None) location in the list. If a bear and a fish collide,
 # however, then the fish died (i.e., it disappears).
+
 import random
-from collections import Counter
+from abc import ABC, abstractmethod
+
+
+class Rio:
+    def __init__(self, comprimento):
+        self.comprimentoRio = comprimento  # comprimento do Rio
+        self.rio = [None] * comprimento  # inicializa o rio como uma lista vazia
+        self.inicio()
+
+    def inicio(self):
+        qtd_peixe = int(len(self.rio)*0.5)
+        qtd_urso= int(len(self.rio) * 0.4)
+        self.popular_rio(qtd_peixe, Peixe)
+        self.popular_rio(qtd_urso, Urso)
+
+    def popular_rio(self, qtd, tipo):
+        num = 0
+        while num < qtd:
+            idx = random.randrange(0, self.comprimentoRio)
+            if not self.rio[idx]:
+                self.rio[idx] = tipo()
+                num += 1
+
+    def fluir(self):
+        itr = 0
+        while itr < 5:
+            for i in range(len(self.rio)):
+                if self.rio[i]:
+                    a = self.rio[i]
+                    pos = a.andar()
+                    if 0 <= pos + i < len(self.rio) and pos + i != i:
+                        if self.rio[pos + i]:
+                            if isinstance(a, Urso):
+                                self.movimentarUrso(a, pos, i)
+                            elif isinstance(a, Peixe):
+                                self.movimentarPeixe(a, pos, i)
+                        else:
+                            self.rio[pos + i] = self.rio[i]
+                            self.rio[i] = None
+            itr += 1
+
+    def movimentarUrso(self, a, pos, i):
+        if a.reproduzir(self.rio[pos + i]):
+            cont = self.rio.count(None)
+            if cont >= 1:
+                self.rio[self.rio.index(None)] = Urso()
+        elif a.comer(self.rio[pos + i]):
+            self.rio[pos + i] = None
+
+    def movimentarPeixe(self, a, pos, i):
+        if a.reproduzir(self.rio[pos+i]):
+            cont = self.rio.count(None)
+            if cont >= 1:
+                self.rio[self.rio.index(None)] = Urso()
+        else:
+            self.rio[i] = None
+
+    def __str__(self):
+        s = '| '
+        for i in range(len(self.rio)):
+            s = s + self.rio[i].__str__() + ' |'
+        return s
+
+
+class Animal(ABC):
+    @abstractmethod
+    def andar(self):
+        pass
+
+    @abstractmethod
+    def comer(self, animal):
+        pass
+
+    @abstractmethod
+    def reproduzir(self, animal):
+        pass
 
 
 class Urso:
-    def __init__(self):
-        print()
+    def andar(self):
+        destino = random.choice([-1, 1])
+        return destino
+
+    def comer(self, animal):
+        result = False
+        if isinstance(animal, Peixe):
+            result = True
+        return result
+
+    def reproduzir(self, animal):
+        result = False
+        if isinstance(animal, Urso):
+            result = True
+        return result
 
     def __repr__(self):
         return 'Urso'
 
 
 class Peixe:
-    def __init__(self):
-        print()
+    def andar(self):
+        destino = random.choice([-1, 1])
+        return destino
+
+    def comer(self, animal):
+        return False
+
+    def reproduzir(self, animal):
+        result = False
+        if isinstance(animal, Peixe):
+            result = True
+        return result
 
     def __repr__(self):
         return 'Peixe'
 
 
-class Rio:
-    def __init__(self):
-        self.comprimentoRio = 5  # comprimento do Rio
-        self.rio=[]  # inicializa o rio como uma lista vazia
-
-    def __repr__(self):
-        return str([i for i in self.rio])
-
-    def popular_rio(self):
-        self.rio=[random.choice([Urso(),Peixe(),None]) for i in range(0,self.comprimentoRio)]  # popula o rio
-
-    def prox_iteracao(self, n=1):
-        for i in range(n):
-            index_atual = random.choice(list(range(self.comprimentoRio)))  # escolhe uma posição aleatória para se mover
-            destino = random.choice([-1, 1])  # escolhe o destino (esquerda ou direita)
-            if self.rio[index_atual] is None:  # posição None não se move
-                pass
-            else:
-                index_novo = index_atual+destino  # define a nova posição
-                print(self.rio[index_atual], "vai para", "esquerda" if destino == -1 else "direita")
-                if index_novo < 0 or index_novo > len(self.rio) - 1:  # valores de fora da lista não são válidos
-                    pass
-                elif isinstance(self.rio[index_atual], Urso):  # se a posição escolhida aleatoriamente for um urso
-                    if isinstance(self.rio[index_novo], Urso):  # se encontrar um urso
-                        cont = self.rio.count(None)  # verifica se existe posição vazia na lista
-                        if cont > 1:
-                            self.rio.pop(self.rio.index(None))  # remove o None
-                            self.rio.insert(self.rio.index(None), Urso())  # adiciona outro Urso
-                    elif isinstance(self.rio[index_novo], Peixe):  # se a posição de destino for um peixe
-                        self.rio[index_novo] = Urso()  # substitui por um urso
-                        self.rio[index_atual] = None  # antiga posição fica vazia
-                    else:  # se a posição de destino for vazia
-                        self.rio[index_atual] = None  # a posição antiga fica vazia
-                        self.rio[index_novo] = Urso()  # o Urso ocupa a posição de destino
-                elif isinstance(self.rio[index_atual], Peixe):  # se a posição escolhida aleatoriamente for um peixe
-                    if isinstance(self.rio[index_novo], Peixe):  # se encontrar um peixe
-                        cont2 = self.rio.count(None)  # verifica se existe posição vazia na lista
-                        if cont2 > 1:
-                            self.rio.pop(self.rio.index(None))  # remove o None
-                            self.rio.insert(self.rio.index(None), Peixe())  # adiciona outro peixe
-                    elif isinstance(self.rio[index_novo], Urso):  # se a posição de destino for um urso
-                        self.rio[index_atual] = None  # o peixe morre
-                    else:  # se a posição escolhida for vazia
-                        self.rio[index_atual] = None  # a posição antiga fica vazia
-                        self.rio[index_novo] = Peixe()  # o peixe ocupa a posição de destino
-                print(self.rio)
-
-    def mostrar(self):
-        print("Estado final")
-        print(self.rio)
-
-
-r = Rio()
-r.popular_rio()
-print("Estado inicial:")
-print(r)
-r.prox_iteracao(20)
-r.mostrar()
+if __name__ == '__main__':
+    r = Rio(5)
+    print(r)
+    r.fluir()
+    print(r)
