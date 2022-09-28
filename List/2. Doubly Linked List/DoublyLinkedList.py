@@ -107,6 +107,21 @@ class DoublyLinkedList:
         self._length += 1
         return newNode
 
+    def remove(self, elem):
+        if self._length == 0:
+            pass
+        aux = self._header
+        found_elem = False
+        while aux._next and not found_elem:
+            if aux._data == elem:
+                aux._prev._next = aux._next
+                aux._next._prev = aux._prev
+                aux = aux._next
+                self._length -= 1
+                found_elem = True
+            else:
+                aux = aux._next
+
     def remove_all(self, data):
         curr = self._header._next
         while curr is not self._trailer:
@@ -154,3 +169,8 @@ if __name__ == '__main__':
     dll.append(5)
     dll.append(8)
     print(dll)
+    dll.remove(8)
+    dll.remove(12)
+    dll.remove(5)
+    print(dll)
+    dll.insert(0,5)
