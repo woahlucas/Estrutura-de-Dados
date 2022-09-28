@@ -50,10 +50,11 @@ class MyStack(Stack):
             raise Exception('The list is empty!')
 
     def is_empty(self):
-        if self.__len__() == 0:
+        if self.data.__len__() == 0:
             return True
         else:
             return False
+
 
 if __name__ == '__main__':
     st = MyStack()
