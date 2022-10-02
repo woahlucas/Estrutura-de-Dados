@@ -1,6 +1,11 @@
 from abc import ABC, abstractmethod
 
 
+class Empty(Exception):
+    """Error attempting to access an element from an empty container."""
+    pass
+
+
 class Stack(ABC):
 
     @abstractmethod
@@ -34,26 +39,37 @@ class MyStack(Stack):
     def __len__(self):
         return len(self.data)
 
-    def push(self,data):
+    def push(self, data):
         self.data.append(data)
 
     def pop(self):
-        if self.__len__() > 0:
-            self.data.pop()
-        else:
-            raise Exception('The list is empty!')
+        if self.is_empty():
+            raise Empty('The stack is empty!')
+        self.data.pop()
 
     def top(self):
-        if self.__len__() > 0:
-            return self.data[-1]
-        else:
-            raise Exception('The list is empty!')
+        if self.is_empty():
+            raise Empty('The stack is empty!')
+        return self.data[-1]
 
     def is_empty(self):
         if self.data.__len__() == 0:
             return True
-        else:
-            return False
+        return False
+
+
+def reverse(s):
+    """Method for reversing a stack"""
+    aux = MyStack()
+    i = 0
+    for c in range(s.__len__()):
+        popped = s.top()
+        s.pop()
+        aux.push(popped)
+    while i < aux.__len__():
+        s.push(aux.data[i])
+        i += 1
+    return s
 
 
 if __name__ == '__main__':
@@ -62,4 +78,5 @@ if __name__ == '__main__':
     st.push(24)
     st.push(6)
     print(st)
-    print(st.top())
+    reverse(st)
+    print(st)
