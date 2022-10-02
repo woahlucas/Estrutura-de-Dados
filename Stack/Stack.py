@@ -72,6 +72,26 @@ def reverse(s):
     return s
 
 
+def matches(expression):
+    """Check for balanced delimiters in expressions"""
+    left = '({['
+    right = ')}]'
+    S = MyStack()
+    for c in expression:
+        if c in left:
+            S.push(c)
+        elif c in right:
+            pos = right.index(c)
+            if not S.is_empty() and left[pos] == S.data[S.__len__() - 1]:
+                S.pop()
+            else:
+                return "Unbalanced"
+    if S.is_empty():
+        return "Balanced"
+    else:
+        return "Unbalanced"
+
+
 if __name__ == '__main__':
     st = MyStack()
     st.push(4)
@@ -80,3 +100,4 @@ if __name__ == '__main__':
     print(st)
     reverse(st)
     print(st)
+    print(matches('(5+[2+2])'))
