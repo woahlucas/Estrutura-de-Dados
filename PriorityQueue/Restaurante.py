@@ -76,7 +76,7 @@ class Restaurant:
     def add_to_queue(self, k, v):
         self.queue.add(k, v)
 
-    def add_to_table(self, k):
+    def add_to_table(self, k):  # TODO não pode adicionar se não estiver mais na lista
         for e in self.queue.data:
             if e[0] == k:
                 t = (e[0], e[1])
