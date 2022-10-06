@@ -10,70 +10,9 @@ import random
 from abc import ABC, abstractmethod
 
 
-class Rio:
-    def __init__(self, comprimento):
-        self.comprimentoRio = comprimento  # comprimento do Rio
-        self.rio = [None] * comprimento  # inicializa o rio como uma lista vazia
-        self.inicio()
-
-    def inicio(self):
-        qtd_peixe = int(len(self.rio)*0.5)
-        qtd_urso= int(len(self.rio) * 0.4)
-        self.popular_rio(qtd_peixe, Peixe)
-        self.popular_rio(qtd_urso, Urso)
-
-    def popular_rio(self, qtd, tipo):
-        num = 0
-        while num < qtd:
-            idx = random.randrange(0, self.comprimentoRio)
-            if not self.rio[idx]:
-                self.rio[idx] = tipo()
-                num += 1
-
-    def fluir(self):
-        itr = 0
-        while itr < 5:
-            for i in range(len(self.rio)):
-                if self.rio[i]:
-                    a = self.rio[i]
-                    pos = a.andar()
-                    if 0 <= pos + i < len(self.rio) and pos + i != i:
-                        if self.rio[pos + i]:
-                            if isinstance(a, Urso):
-                                self.movimentarUrso(a, pos, i)
-                            elif isinstance(a, Peixe):
-                                self.movimentarPeixe(a, pos, i)
-                        else:
-                            self.rio[pos + i] = self.rio[i]
-                            self.rio[i] = None
-            itr += 1
-
-    def movimentarUrso(self, a, pos, i):
-        if a.reproduzir(self.rio[pos + i]):
-            cont = self.rio.count(None)
-            if cont >= 1:
-                self.rio[self.rio.index(None)] = Urso()
-        elif a.comer(self.rio[pos + i]):
-            self.rio[pos + i] = None
-
-    def movimentarPeixe(self, a, pos, i):
-        if a.reproduzir(self.rio[pos+i]):
-            cont = self.rio.count(None)
-            if cont >= 1:
-                self.rio[self.rio.index(None)] = Urso()
-        else:
-            self.rio[i] = None
-
-    def __str__(self):
-        s = '| '
-        for i in range(len(self.rio)):
-            s = s + self.rio[i].__str__() + ' |'
-        return s
-
-
 class Animal(ABC):
     @abstractmethod
-    def andar(self):
+    def direcao(self):
         pass
 
     @abstractmethod
@@ -84,9 +23,61 @@ class Animal(ABC):
     def reproduzir(self, animal):
         pass
 
+    @abstractmethod
+    def movimentar(self, a, pos, i):
+        pass
 
-class Urso:
-    def andar(self):
+
+class Rio:
+    def __init__(self, comprimento):
+        self.comprimentoRio = comprimento  # comprimento do Rio
+        self.rio = [None] * comprimento  # inicializa o rio como uma lista vazia
+        self.inicio()
+
+    def inicio(self):
+        qtd_peixe = int(len(self.rio) * 0.6)
+        qtd_urso = int(len(self.rio) * 0.4)
+        self.popular_rio(qtd_peixe, Peixe)
+        self.popular_rio(qtd_urso, Urso)
+
+    def popular_rio(self, qtd, tipo):
+        num = 0
+        while num < qtd:
+            idx = random.randrange(0, self.comprimentoRio)
+            if not self.rio[idx]:
+                self.rio[idx] = tipo(self.rio)
+                num += 1
+
+    def fluir(self):
+        itr = 0
+        while itr < 5:
+            for i in range(len(self.rio)):
+                if self.rio[i]:
+                    a = self.rio[i]
+                    pos = a.direcao()
+                    if 0 <= pos + i < len(self.rio) and pos + i != i:
+                        if self.rio[pos + i]:
+                            if isinstance(a, Urso):
+                                Urso.movimentar(self, a, pos, i)
+                            elif isinstance(a, Peixe):
+                                Peixe.movimentar(self, a, pos, i)
+                        else:
+                            self.rio[pos + i] = self.rio[i]
+                            self.rio[i] = None
+            itr += 1
+
+    def __str__(self):
+        s = '| '
+        for i in range(len(self.rio)):
+            s = s + self.rio[i].__str__() + ' | '
+        return s
+
+
+class Urso(Animal):
+    def __init__(self, rio):
+        self.rio = rio
+
+    def direcao(self):
         destino = random.choice([-1, 1])
         return destino
 
@@ -102,12 +93,23 @@ class Urso:
             result = True
         return result
 
+    def movimentar(self, a, pos, i):
+        if a.reproduzir(self.rio[pos + i]):
+            cont = self.rio.count(None)
+            if cont >= 1:
+                self.rio[self.rio.index(None)] = Urso(self.rio)
+        elif a.comer(self.rio[pos + i]):
+            self.rio[pos + i] = None
+
     def __repr__(self):
         return 'Urso'
 
 
-class Peixe:
-    def andar(self):
+class Peixe(Animal):
+    def __init__(self, rio):
+        self.rio = rio
+
+    def direcao(self):
         destino = random.choice([-1, 1])
         return destino
 
@@ -115,10 +117,16 @@ class Peixe:
         return False
 
     def reproduzir(self, animal):
-        result = False
         if isinstance(animal, Peixe):
-            result = True
-        return result
+            return True
+        return False
+
+    def movimentar(self, a, pos, i):
+        cont = self.rio.count(None)
+        if a.reproduzir(self.rio[pos + i]) and cont >= 1:
+            self.rio[self.rio.index(None)] = Peixe(self.rio)
+        else:
+            self.rio[i] = None
 
     def __repr__(self):
         return 'Peixe'
